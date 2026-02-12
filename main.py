@@ -17,7 +17,7 @@ def crc8_maxim(data):
 # 电机控制类
 class WinderController:
     def __init__(self, port='COM7'):
-        self.ser = serial.Serial(port, 115200, timeout=0.1)
+        self.ser = serial.Serial(port, 115200, timeout=0.5)
         self.motor_id = 0x01
 
     def set_mode(self, mode_code):
@@ -51,6 +51,8 @@ class WinderController:
                     real_speed = struct.unpack('>h', res[4:6])[0]
                     temp = res[6]
                     print(f"\r[运行中] 实际转速: {real_speed} RPM | 电机温度: {temp}℃ ", end="")
+                else:
+                    print(f"\r no response.")
                 
                 time.sleep(0.05) # 20Hz 刷新，保证控制平滑
         except KeyboardInterrupt:
@@ -67,7 +69,7 @@ class WinderController:
 
 # =================使用示例=================
 if __name__ == "__main__":
-    winder = WinderController('COM7')
+    winder = WinderController('COM6')
     try:
         # 正转 3 秒
         winder.run_speed(150, 3) 
