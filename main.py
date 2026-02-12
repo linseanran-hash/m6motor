@@ -2,6 +2,7 @@ import serial
 import struct
 import time
 
+# crc 校验
 def crc8_maxim(data):
     crc = 0
     for byte in data:
@@ -13,6 +14,7 @@ def crc8_maxim(data):
                 crc >>= 1
     return crc
 
+# 电机控制类
 class WinderController:
     def __init__(self, port='COM7'):
         self.ser = serial.Serial(port, 115200, timeout=0.1)
