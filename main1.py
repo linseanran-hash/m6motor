@@ -16,7 +16,7 @@ def crc8_maxim(data):
 
 # --- 2. 串口初始化 (请根据你的设备管理器修改 COM 号) ---
 try:
-    ser = serial.Serial('COM6', 115200, timeout=0.1)
+    ser = serial.Serial('COM8', 115200, timeout=0.1)
     print("串口已连接")
 except Exception as e:
     print(f"串口打开失败: {e}")

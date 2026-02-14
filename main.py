@@ -1,6 +1,13 @@
 import serial
 import struct
 import time
+from enum import Enum
+
+# 定义电机模式枚举
+class MotorMode(Enum):
+    CURRENT  = 0x01  # 电流模式
+    VELOCITY = 0x02  # 速度模式
+    POSITION = 0x03  # 位置模式
 
 # crc 校验
 def crc8_maxim(data):
@@ -20,18 +27,24 @@ class WinderController:
         self.ser = serial.Serial(port, 115200, timeout=0.5)
         self.motor_id = 0x01
 
-    def set_mode(self, mode_code):
-        """0x01: 电流模式, 0x02: 速度模式, 0x03: 位置模式"""
-        # 这里的 DATA[6] 是根据你之前成功代码确定的位置
-        mode_data = bytearray([0, 0, 0, 0, 0, 0, mode_code])
+    def set_mode(self, mode: MotorMode):
+        """
+        使用枚举设置电机模式
+        用法: winder.set_motor_mode(MotorMode.VELOCITY)
+        """
+        print(f"正在切换模式至: {mode.name} (代码: {hex(mode.value)})")
+        
+        # 构造 A0 指令，DATA[6] 填入枚举对应的 value
+        mode_data = bytearray([0, 0, 0, 0, 0, 0, mode.value])
         packet = bytearray([self.motor_id, 0xA0]) + mode_data
         packet.append(crc8_maxim(packet))
+        
         self.ser.write(packet)
-        time.sleep(0.1)
+        time.sleep(0.2)
 
     def run_speed(self, rpm, seconds):
         print(f">>> 启动卷线：{rpm} RPM，持续 {seconds} 秒")
-        self.set_mode(0x02) # 强制进入速度模式
+        self.set_mode(MotorMode.VELOCITY) # 强制进入速度模式
         
         speed_hex = struct.pack('>h', rpm)
         # 构造 7 字节 DATA：速度(2字节) + 加速度/电流限制等(5字节)
@@ -69,7 +82,7 @@ class WinderController:
 
 # =================使用示例=================
 if __name__ == "__main__":
-    winder = WinderController('COM6')
+    winder = WinderController('COM8')
     try:
         # 正转 3 秒
         winder.run_speed(150, 3) 
