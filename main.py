@@ -1,6 +1,7 @@
 import serial
 import struct
 import time
+import math
 from enum import Enum
 
 # 定义电机模式枚举
@@ -23,9 +24,24 @@ def crc8_maxim(data):
 
 # 电机控制类
 class WinderController:
-    def __init__(self, port='COM7'):
+    def __init__(self, port='COM7', radius_cm=1.5):
         self.ser = serial.Serial(port, 115200, timeout=0.5)
         self.motor_id = 0x01
+        self.radius = radius_cm  # 卷线轴半径
+        self.ticks_per_circle = 32767 # 手册中的一圈数值
+        self.enable_mode()
+
+    def enable_mode(self):
+        """使能模式，上电后需要设置一次"""
+        print(f"正在进入使能模式")
+        
+        # 构造 A0 指令，DATA[6] 填入枚举对应的 value
+        mode_data = bytearray([8, 0, 0, 0, 0, 0, 0])
+        packet = bytearray([self.motor_id, 0xA0]) + mode_data
+        packet.append(crc8_maxim(packet))
+        
+        self.ser.write(packet)
+        time.sleep(0.2)
 
     def set_mode(self, mode: MotorMode):
         """
@@ -35,9 +51,9 @@ class WinderController:
         print(f"正在切换模式至: {mode.name} (代码: {hex(mode.value)})")
         
         # 构造 A0 指令，DATA[6] 填入枚举对应的 value
-        mode_data = bytearray([0, 0, 0, 0, 0, 0, mode.value])
+        mode_data = bytearray([0, 0, 0, 0, 0, 0, 0, mode.value])
         packet = bytearray([self.motor_id, 0xA0]) + mode_data
-        packet.append(crc8_maxim(packet))
+        # packet.append(crc8_maxim(packet))
         
         self.ser.write(packet)
         time.sleep(0.2)
@@ -101,6 +117,7 @@ class WinderController:
         """
         直接设置角度 (0-360)
         """
+        self.set_mode(MotorMode.POSITION)
         # 1. 角度映射：0~360 -> 0~32767
         target_val = int((angle_deg % 360) * (32767 / 360.0))
         
@@ -133,25 +150,50 @@ class WinderController:
         stop_packet.append(crc8_maxim(stop_packet))
         self.ser.write(stop_packet)
 
+    
+    def move_distance(self, distance_cm, speed_rpm=150):
+        """
+        根据厘米数移动绳子
+        distance_cm: 正数向上收(顺时针)，负数向下放（逆时针）
+        speed_rpm: 移动速度
+        """
+        # 1. 计算周长
+        circumference = 2 * math.pi * self.radius
+        # 2. 计算需要转多少圈
+        circles = distance_cm / circumference
+        # 3. 计算需要运行的总时间 (秒)
+        # 速度 RPM 是每分钟转数，转一圈需要 60/RPM 秒
+        duration = abs(circles) / (speed_rpm / 60)
+        
+        direction_speed = speed_rpm if distance_cm > 0 else -speed_rpm
+        
+        print(f"\n[计算] 目标距离: {distance_cm}cm")
+        print(f"[计算] 对应圈数: {circles:.2f} 圈 | 预计耗时: {duration:.2f}s")
+        
+        # 执行动作 (复用你已通的 run_speed)
+        self.run_speed(direction_speed, duration)
+
 # =================使用示例=================
 if __name__ == "__main__":
-    winder = WinderController('COM8')
+    winder = WinderController('COM7', 3)
     try:
         winder.stop()
-        time.sleep(0.05)
+        time.sleep(1)
         winder.get_other_feedback()
-        # 正转 3 秒
-        # winder.run_speed(150, 3) 
-        winder.set_mode(MotorMode.POSITION)
-        time.sleep(0.05)
+         
+        # winder.set_mode(MotorMode.VELOCITY)
+        time.sleep(1)
         winder.get_other_feedback()
-        while True:
-            target = input("输入目标角度 (0-360) 或 Q 退出: ")
-            if target.upper() == 'Q': break
-            winder.move_to_angle(int(target))
-            time.sleep(0.05)
-            winder.get_other_feedback()
+        # while True:
+        #     target = input("输入目标角度 (0-360) 或 Q 退出: ")
+        #     if target.upper() == 'Q': break
+        #     winder.move_to_angle(int(target))
+        #     time.sleep(1)
+        #     winder.get_other_feedback()
         # 反转 2 秒（如果需要回线）
-        # winder.run_speed(-100, 2)
+        winder.move_distance(18, 100)
+        time.sleep(1)
+        winder.move_distance(-18, 100)
+        
     finally:
         winder.stop()
