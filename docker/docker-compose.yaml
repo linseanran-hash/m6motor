@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto:latest
+    container_name: m6-mosquitto
+    restart: always
+    ports:
+      - "1883:1883"   # MQTT 标准端口
+      - "9001:9001"   # MQTT Over WebSockets (以后做网页控制台有用)
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    # 解决 Linux 下挂载权限问题
+    user: "${UID:-1000}:${GID:-1000}"
+
+networks:
+  default:
+    name: m6_network

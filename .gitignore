@@ -13,3 +13,10 @@ venv/
 
 # 个人配置文件（后续我们会用到）
 config.py
+
+# mosquitto docker's runtime files
+docker/mosquitto/data/*
+!docker/mosquitto/data/.gitkeep
+
+docker/mosquitto/log/*
+!docker/mosquitto/log/.gitkeep

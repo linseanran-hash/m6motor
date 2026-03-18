@@ -19,7 +19,10 @@
 2.  **ESP32 端**：确保已刷入 MicroPython 固件，并安装 `Pymakr` (VS Code 插件)。
 3.  **MQTT Broker**：推荐使用 Docker 运行 Mosquitto。
     ```bash
-    docker run -d --name mosquitto -p 1883:1883 eclipse-mosquitto
+    # 启动 Mosquitto
+    docker compose up -d
+    # 停止 mosquitto
+    docker compose down
     ```
 
 ### 2.2 配置初始化
@@ -56,3 +59,10 @@
 * **ESP32 连不上 MQTT**：检查防火墙是否放行了 1883 端口；检查 `config.py` 是否使用了局域网 IP。
 * **电机无响应**：检查 RS485 转接头接线 (A/B 是否接反)；检查 `MOTOR_ID` 是否匹配。
 * **权限错误 (Linux)**：执行 `sudo usermod -a -G dialout $USER` 并重启。
+
+## 6. 路线图 (Roadmap)
+- [x] 模块化重构与依赖注入架构
+- [x] 跨平台 MQTT 通讯管理
+- [x] Docker 容器化 Broker 部署
+- [ ] **异步 `uasyncio` 改造**：解决电机运动期间无法响应停止指令的阻塞问题。
+- [ ] **阻力反馈监控**：通过电流反馈实现自动堵转保护。
