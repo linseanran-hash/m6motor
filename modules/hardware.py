@@ -31,5 +31,21 @@ class MotorIO:
     def read(self, n):
         return self.bus.read(n)
 
+class MockIO:
+    def __init__(self):
+        print("[Mock] 模拟硬件 IO 已启动")
+
+    def write(self, data):
+        # 将发给电机的十六进制指令打印出来，而不是发往串口
+        hex_data = ' '.join(['%02X' % b for b in data])
+        print(f"[Mock -> Motor] 发送指令: {hex_data}")
+
+    def read(self, length):
+        # 模拟电机的返回（例如永远返回成功状态）
+        return b'\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a' 
+
+# 在 main.py 组装时切换
+# io = get_io() 
+io = MockIO()
 # 单例导出
-io = MotorIO()
+# io = MotorIO()

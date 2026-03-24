@@ -15,7 +15,13 @@ from modules.mqtt_manager import MQTTManager
 winder = M6Winder(io, motor_id=config.MOTOR_ID, radius_cm=config.WINDER_RADIUS_CM)
 
 def handle_move(payload):
-    """MQTT Move消息处理函数"""
+    """MQTT Move消息处理函数
+    payload 格式：
+    {
+        "dist": "距离， 单位： cm， 正数：顺时针，负数：逆时针",
+        "speed": "转速， 单位： 转/分钟"
+    }
+    """
     try:
         data = json.loads(payload)
         dist = data.get("dist", 0)   # 距离 (cm)
@@ -54,8 +60,8 @@ def main():
         time.sleep(1)
         
         print("正在连接 MQTT Broker...")
-        mqtt.connect()
-        print("系统就绪，等待 Topic:", config.TOPIC_CONTROL)
+        mqtt.connect(config.SUBSCRIBE_TOPICS)
+        print("系统就绪，等待 Topic:")
         
         while True:
             # 对于 MicroPython，需要不断检查是否有新消息
