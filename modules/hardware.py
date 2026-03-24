@@ -17,7 +17,6 @@ class MotorIO:
             self.bus = UART(2, baudrate=115200, tx=tx_pin, rx=rx_pin)
             self.is_mcu = True
         else:
-            self.bus = serial.Serial(port, 115200, timeout=0.1)
             import serial
             if not config or not hasattr(config, 'SERIAL_PORT'):
                 print("\n[错误] PC 端必须在 modules/config.py 中定义 SERIAL_PORT")
@@ -46,6 +45,6 @@ class MockIO:
 
 # 在 main.py 组装时切换
 # io = get_io() 
-io = MockIO()
+# io = MockIO()
 # 单例导出
-# io = MotorIO()
+io = MotorIO()
