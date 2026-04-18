@@ -15,7 +15,15 @@
 ## 2. 快速开始
 
 ### 2.1 环境准备
-1.  **PC 端**：安装 Python 3.8+，执行 `pip install -r requirements.txt`。
+1.  **PC 端**：安装 Python 3.8+，执行:
+```bash
+ # normal use
+ pip install -r requirements.txt
+ # use uv
+ uv venv --python 3.14
+ .venv\Scripts\activate
+ uv pip install -r requirements.txt
+ ```
 2.  **ESP32 端**：确保已刷入 MicroPython 固件，并安装 `Pymakr` (VS Code 插件)。
 3.  **MQTT Broker**：推荐使用 Docker 运行 Mosquitto。
     ```bash
@@ -33,7 +41,21 @@
     * `SERIAL_PORT`: PC 连接电机的串口号（Linux 用户请确保已加入 `dialout` 组）。
     * `MQTT_BROKER`: **重点**！ESP32 连接时必须填电脑的局域网 IP，不可填 `localhost`。
 
+### 2.3 运行
+```bash
+# normal
+python main.py
+# use uv
+uv run main.py
+```
 
+### 2.4 模拟测试
+```bash
+# normal
+python emulator.py
+# use uv
+uv run emulator.py
+```
 ## 3. MQTT 控制协议
 
 系统启动后将自动订阅以下主题（以 ID=01 为例）：
