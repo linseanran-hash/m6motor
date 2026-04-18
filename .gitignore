@@ -1,0 +1,22 @@
+# Python 字节码
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VS Code 私人配置
+.vscode/
+
+# Conda/虚拟环境
+env/
+venv/
+.env
+
+# 个人配置文件（后续我们会用到）
+config.py
+
+# mosquitto docker's runtime files
+docker/mosquitto/data/*
+!docker/mosquitto/data/.gitkeep
+
+docker/mosquitto/log/*
+!docker/mosquitto/log/.gitkeep

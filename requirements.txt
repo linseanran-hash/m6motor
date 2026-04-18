@@ -1,0 +1,3 @@
+# 注：MicroPython 环境下无需安装上述包，系统会自带或通过 mip 安装
+pyserial>=3.5    # PC 端串口通讯
+paho-mqtt>=1.6   # 后续增加的 MQTT 支持
